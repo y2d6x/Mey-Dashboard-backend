@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument, UserRole } from './Schemas/user.schema';
@@ -6,15 +10,19 @@ import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  async create(username: string, email: string, hashedPassword: string): Promise<UserDocument> {
+  async create(
+    username: string,
+    email: string,
+    hashedPassword: string,
+  ): Promise<UserDocument> {
     // Check if user already exists
-    const existingUser = await this.userModel.findOne({
-      $or: [{ email }, { username }],
-    }).exec();
+    const existingUser = await this.userModel
+      .findOne({
+        $or: [{ email }, { username }],
+      })
+      .exec();
 
     if (existingUser) {
       if (existingUser.email === email) {
@@ -46,20 +54,33 @@ export class UsersService {
     return this.userModel.findById(id).exec();
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string | null): Promise<void> {
-    const hashedRefreshToken = refreshToken ? await bcrypt.hash(refreshToken, 10) : null;
-    await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashedRefreshToken });
+  async updateRefreshToken(
+    userId: string,
+    refreshToken: string | null,
+  ): Promise<void> {
+    const hashedRefreshToken = refreshToken
+      ? await bcrypt.hash(refreshToken, 10)
+      : null;
+    await this.userModel.findByIdAndUpdate(userId, {
+      refreshToken: hashedRefreshToken,
+    });
   }
 
-  async findByRefreshToken(userId: string, refreshToken: string): Promise<UserDocument | null> {
+  async findByRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<UserDocument | null> {
     const user = await this.userModel.findById(userId).exec();
-    
+
     if (!user || !user.refreshToken) {
       return null;
     }
 
-    const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
-    
+    const isRefreshTokenValid = await bcrypt.compare(
+      refreshToken,
+      user.refreshToken,
+    );
+
     if (!isRefreshTokenValid) {
       return null;
     }
@@ -71,11 +92,18 @@ export class UsersService {
     await this.userModel.findByIdAndUpdate(userId, { refreshToken: null });
   }
 
-  async createWithRole(username: string, email: string, hashedPassword: string, role: UserRole): Promise<UserDocument> {
+  async createWithRole(
+    username: string,
+    email: string,
+    hashedPassword: string,
+    role: UserRole,
+  ): Promise<UserDocument> {
     // Check if user already exists
-    const existingUser = await this.userModel.findOne({
-      $or: [{ email }, { username }],
-    }).exec();
+    const existingUser = await this.userModel
+      .findOne({
+        $or: [{ email }, { username }],
+      })
+      .exec();
 
     if (existingUser) {
       if (existingUser.email === email) {
@@ -93,7 +121,7 @@ export class UsersService {
       role,
     });
 
-    return await newUser.save() as UserDocument;
+    return (await newUser.save()) as UserDocument;
   }
 
   async findAll(): Promise<UserDocument[]> {
@@ -111,13 +139,13 @@ export class UsersService {
     const user = await this.userModel.findByIdAndUpdate(
       userId,
       { role },
-      { new: true, projection: { password: 0, refreshToken: 0 } }
+      { new: true, projection: { password: 0, refreshToken: 0 } },
     );
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    
+
     return user;
   }
 }

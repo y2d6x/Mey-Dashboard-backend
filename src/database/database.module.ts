@@ -3,15 +3,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
-    imports: [
-        MongooseModule.forRootAsync({
-            imports : [ConfigModule],
-            useFactory: async (configService : ConfigService) => ({
-                uri: configService.get<string>('MONGODB_URL'),
-            }),
-            inject : [ConfigService]
-            
-        })
-    ]
+  imports: [
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGODB_URL'),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
 })
 export class DatabaseModule {}

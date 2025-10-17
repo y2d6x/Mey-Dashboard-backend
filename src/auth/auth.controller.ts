@@ -1,14 +1,20 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
-  Get, 
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
   Request,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
@@ -21,12 +27,13 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Register a new user',
-    description: 'Create a new user account with username, email, and password. Password must meet security requirements.',
+    description:
+      'Create a new user account with username, email, and password. Password must meet security requirements.',
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'User successfully registered',
     schema: {
       example: {
@@ -42,9 +49,15 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Invalid input or validation error' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input or validation error',
+  })
   @ApiResponse({ status: 409, description: 'Email or username already exists' })
-  @ApiResponse({ status: 429, description: 'Too many requests (rate limit: 3/min)' })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many requests (rate limit: 3/min)',
+  })
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -52,12 +65,13 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Login user',
-    description: 'Authenticate user with email and password. Returns access token and refresh token.',
+    description:
+      'Authenticate user with email and password. Returns access token and refresh token.',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Login successful',
     schema: {
       example: {
@@ -72,10 +86,16 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  @ApiResponse({ status: 429, description: 'Too many requests (rate limit: 5/min)' })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many requests (rate limit: 5/min)',
+  })
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
     return this.authService.login(user);
   }
 
@@ -83,12 +103,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Logout user',
-    description: 'Invalidate the user\'s refresh token. Access token will expire naturally.',
+    description:
+      "Invalidate the user's refresh token. Access token will expire naturally.",
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Logout successful',
     schema: {
       example: {
@@ -96,7 +117,10 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or expired token' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired token',
+  })
   async logout(@Request() req) {
     return this.authService.logout(req.user.userId);
   }
@@ -104,13 +128,14 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Refresh access token',
-    description: 'Get a new access token using a valid refresh token. Returns new access and refresh tokens.',
+    description:
+      'Get a new access token using a valid refresh token. Returns new access and refresh tokens.',
   })
   @ApiBody({ type: RefreshTokenDto })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Tokens refreshed successfully',
     schema: {
       example: {
@@ -119,23 +144,32 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid refresh token' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid refresh token',
+  })
   @ApiResponse({ status: 403, description: 'Forbidden - Access denied' })
-  @ApiResponse({ status: 429, description: 'Too many requests (rate limit: 10/min)' })
+  @ApiResponse({
+    status: 429,
+    description: 'Too many requests (rate limit: 10/min)',
+  })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   async refresh(@Request() req) {
-    return this.authService.refreshTokens(req.user.userId, req.user.refreshToken);
+    return this.authService.refreshTokens(
+      req.user.userId,
+      req.user.refreshToken,
+    );
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get user profile',
-    description: 'Retrieve the authenticated user\'s profile information.',
+    description: "Retrieve the authenticated user's profile information.",
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Profile retrieved successfully',
     schema: {
       example: {
@@ -147,7 +181,10 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or expired token' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired token',
+  })
   @SkipThrottle()
   async getProfile(@Request() req) {
     return this.authService.validateUserById(req.user.userId);
@@ -156,12 +193,12 @@ export class AuthController {
   @Get('verify')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Verify token validity',
     description: 'Check if the provided JWT access token is valid.',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Token is valid',
     schema: {
       example: {
@@ -171,11 +208,14 @@ export class AuthController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or expired token' })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired token',
+  })
   @SkipThrottle()
   async verifyToken(@Request() req) {
-    return { 
-      valid: true, 
+    return {
+      valid: true,
       userId: req.user.userId,
       email: req.user.email,
     };

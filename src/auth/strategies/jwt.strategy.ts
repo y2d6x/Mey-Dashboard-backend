@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: any) {
     // Optionally verify user still exists in database
     const user = await this.authService.validateUserById(payload.sub);
-    
+
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -28,4 +28,3 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return { userId: payload.sub, email: payload.email };
   }
 }
-

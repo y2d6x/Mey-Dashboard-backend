@@ -15,7 +15,7 @@ import { AdminAuthController } from './admin-auth.controller';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { 
+        signOptions: {
           expiresIn: '1h',
         },
       }),
@@ -27,4 +27,3 @@ import { AdminAuthController } from './admin-auth.controller';
   exports: [AdminAuthService],
 })
 export class AdminAuthModule {}
-

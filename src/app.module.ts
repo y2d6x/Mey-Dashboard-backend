@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { AdminAuthModule } from './admin/auth/admin-auth.module';
+import { ShipmentsModule } from './admin/shipments/shipments.module';
 
 @Module({
   imports: [
@@ -17,20 +18,23 @@ import { AdminAuthModule } from './admin/auth/admin-auth.module';
       envFilePath: '.env',
       cache: true,
     }),
-    
+
     // Rate limiting - 100 requests per 15 minutes per IP (global)
-    ThrottlerModule.forRoot([{
-      ttl: 900000, // 15 minutes in milliseconds
-      limit: 100, // Max requests per time window
-    }]),
-    
+    ThrottlerModule.forRoot([
+      {
+        ttl: 900000, // 15 minutes in milliseconds
+        limit: 100, // Max requests per time window
+      },
+    ]),
+
     // Database
     DatabaseModule,
-    
+
     // Feature modules
     AuthModule,
     UsersModule,
     AdminAuthModule,
+    ShipmentsModule,
   ],
   controllers: [AppController],
   providers: [

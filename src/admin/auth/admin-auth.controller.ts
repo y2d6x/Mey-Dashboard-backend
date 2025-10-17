@@ -1,9 +1,9 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
-  Get, 
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
   Request,
   HttpCode,
   HttpStatus,
@@ -11,7 +11,14 @@ import {
   Delete,
   Patch,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AdminAuthService } from './admin-auth.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -27,12 +34,13 @@ export class AdminAuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Admin login',
-    description: 'Authenticate admin user with email and password. Only users with admin or super_admin role can login.',
+    description:
+      'Authenticate admin user with email and password. Only users with admin or super_admin role can login.',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Admin login successful',
     schema: {
       example: {
@@ -48,10 +56,16 @@ export class AdminAuthController {
     },
   })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  @ApiResponse({ status: 403, description: 'Access denied - Admin privileges required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - Admin privileges required',
+  })
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async login(@Body() adminLoginDto: AdminLoginDto) {
-    const admin = await this.adminAuthService.validateAdmin(adminLoginDto.email, adminLoginDto.password);
+    const admin = await this.adminAuthService.validateAdmin(
+      adminLoginDto.email,
+      adminLoginDto.password,
+    );
     return this.adminAuthService.loginAdmin(admin);
   }
 
@@ -59,20 +73,26 @@ export class AdminAuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create new admin (Super Admin only)',
-    description: 'Create a new admin or super_admin account. Only super admins can perform this action.',
+    description:
+      'Create a new admin or super_admin account. Only super admins can perform this action.',
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Admin created successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Super admin privileges required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Super admin privileges required',
+  })
   @ApiResponse({ status: 409, description: 'Email or username already exists' })
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   async createAdmin(@Body() createAdminDto: CreateAdminDto, @Request() req) {
-    const user = await this.adminAuthService['usersService'].findById(req.user.userId);
+    const user = await this.adminAuthService['usersService'].findById(
+      req.user.userId,
+    );
     return this.adminAuthService.createAdmin(createAdminDto, user.role);
   }
 
@@ -80,19 +100,28 @@ export class AdminAuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get admin profile',
     description: 'Retrieve the authenticated admin user profile.',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Admin profile retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin privileges required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin privileges required',
+  })
   async getProfile(@Request() req) {
-    const user = await this.adminAuthService['usersService'].findById(req.user.userId);
-    const { password, refreshToken, ...result } = user.toObject();
+    const user = await this.adminAuthService['usersService'].findById(
+      req.user.userId,
+    );
+    const {
+      password: _password,
+      refreshToken: _refreshToken,
+      ...result
+    } = user.toObject();
     return result;
   }
 
@@ -100,16 +129,19 @@ export class AdminAuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all users',
     description: 'Retrieve all registered users (Admin only).',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Users retrieved successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin privileges required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin privileges required',
+  })
   async getAllUsers() {
     return this.adminAuthService.getAllUsers();
   }
@@ -118,7 +150,7 @@ export class AdminAuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete user (Super Admin only)',
     description: 'Delete a user account by ID.',
   })
@@ -129,7 +161,10 @@ export class AdminAuthController {
   })
   @ApiResponse({ status: 200, description: 'User deleted successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Super admin privileges required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Super admin privileges required',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   async deleteUser(@Param('id') id: string) {
     return this.adminAuthService.deleteUser(id);
@@ -139,9 +174,9 @@ export class AdminAuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update user role (Super Admin only)',
-    description: 'Change a user\'s role.',
+    description: "Change a user's role.",
   })
   @ApiParam({
     name: 'id',
@@ -162,10 +197,12 @@ export class AdminAuthController {
   })
   @ApiResponse({ status: 200, description: 'User role updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Super admin privileges required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Super admin privileges required',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   async updateUserRole(@Param('id') id: string, @Body('role') role: UserRole) {
     return this.adminAuthService.updateUserRole(id, role);
   }
 }
-

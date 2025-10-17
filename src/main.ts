@@ -65,7 +65,9 @@ async function bootstrap() {
   // 7. Swagger/OpenAPI Documentation
   const config = new DocumentBuilder()
     .setTitle('Mey Account Dashboard API')
-    .setDescription('Production-ready API with comprehensive authentication and security features')
+    .setDescription(
+      'Production-ready API with comprehensive authentication and security features',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -94,7 +96,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  
+
   console.log(`🚀 Application is running on: http://localhost:${port}/api/v1`);
   console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);

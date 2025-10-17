@@ -5,6 +5,9 @@ A production-ready NestJS backend API with comprehensive security features for t
 ## 🚀 Features
 
 - **Complete Authentication System**: JWT-based auth with access and refresh tokens
+- **Admin Panel**: Comprehensive admin authentication and role-based access control
+- **Shipment Management**: Full CRUD operations for managing shipments from Shein, Amazon, Sheglam, and other platforms
+- **Automatic Pricing**: Platform-specific price calculations with manual override capability
 - **Production-Grade Security**: Helmet, CORS, rate limiting, input validation
 - **Swagger/OpenAPI Documentation**: Interactive API documentation with try-it-out functionality
 - **MongoDB Integration**: Mongoose ODM with secure schema design
@@ -76,7 +79,7 @@ Visit `http://localhost:3000/api/docs` for interactive API documentation where y
 
 ### API Endpoints
 
-### Authentication
+### User Authentication
 
 #### Register User
 ```http
@@ -149,6 +152,33 @@ GET /api/v1/auth/verify
 Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
+### Admin & Shipment Management
+
+For detailed documentation on the shipment management system, see [SHIPMENT-MANAGEMENT.md](./SHIPMENT-MANAGEMENT.md).
+
+**Quick Overview:**
+- **Admin Authentication**: Role-based access (Admin, Super Admin)
+- **Shipment CRUD**: Create, read, update, delete shipments
+- **Platform Support**: Shein, Amazon, Sheglam, and custom platforms
+- **Automatic Pricing**: Weight-based calculations with platform-specific fees
+- **Status Tracking**: 9 different shipment statuses from pending to delivered
+- **Search & Filter**: Comprehensive filtering by status, platform, date, and customer
+- **Statistics**: Revenue and shipment analytics
+
+**Admin Endpoints:**
+```
+POST   /admin/auth/login           - Admin login
+GET    /admin/auth/profile         - Get admin profile
+POST   /admin/shipments            - Create shipment
+GET    /admin/shipments            - Get all shipments (with filters)
+GET    /admin/shipments/:id        - Get shipment by ID
+PATCH  /admin/shipments/:id        - Update shipment
+PATCH  /admin/shipments/:id/status - Update shipment status
+DELETE /admin/shipments/:id        - Delete shipment (super admin only)
+POST   /admin/shipments/calculate-price - Calculate price preview
+GET    /admin/shipments/statistics - Get shipment statistics
+```
+
 ## 🛡️ Security Features
 
 ### Built-in Protection Against:
@@ -190,6 +220,18 @@ pnpm run test:cov
 
 ```
 src/
+├── admin/
+│   ├── auth/             # Admin authentication
+│   │   ├── dto/
+│   │   ├── admin-auth.controller.ts
+│   │   ├── admin-auth.module.ts
+│   │   └── admin-auth.service.ts
+│   └── shipments/        # Shipment management
+│       ├── dto/          # Shipment DTOs
+│       ├── schemas/      # Shipment schema
+│       ├── shipments.controller.ts
+│       ├── shipments.module.ts
+│       └── shipments.service.ts
 ├── auth/
 │   ├── dto/              # Data Transfer Objects with validation
 │   ├── guards/           # JWT authentication guards
@@ -203,6 +245,9 @@ src/
 │   ├── users.controller.ts
 │   ├── users.module.ts
 │   └── users.service.ts
+├── common/
+│   ├── decorators/       # Custom decorators (roles)
+│   └── guards/           # Common guards (roles guard)
 ├── database/
 │   └── database.module.ts
 ├── app.module.ts
@@ -302,3 +347,4 @@ For security issues, please refer to [SECURITY.md](./SECURITY.md)
 
 Built with ❤️ using [NestJS](https://nestjs.com/)
 # Mey-Dashboard-backend
+

@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../users/users.service';
@@ -16,7 +20,7 @@ export class AdminAuthService {
 
   async validateAdmin(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
-    
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -27,23 +31,29 @@ export class AdminAuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const { password: _, refreshToken: __, ...result } = user.toObject();
+    const {
+      password: _password,
+      refreshToken: _refreshToken,
+      ...result
+    } = user.toObject();
     return result;
   }
 
   async createAdmin(createAdminDto: CreateAdminDto, creatorRole: UserRole) {
     // Only super_admin can create other admins
     if (creatorRole !== UserRole.SUPER_ADMIN) {
-      throw new ForbiddenException('Only super admins can create admin accounts');
+      throw new ForbiddenException(
+        'Only super admins can create admin accounts',
+      );
     }
 
     const hashedPassword = await bcrypt.hash(createAdminDto.password, 12);
-    
+
     const role = createAdminDto.role || UserRole.ADMIN;
 
     // Super admin can only be created by another super admin
@@ -59,10 +69,21 @@ export class AdminAuthService {
         role,
       );
 
-      const { password: _, refreshToken: __, ...result } = user.toObject();
-      
-      const tokens = await this.generateAdminTokens(result._id.toString(), result.email, result.role);
-      await this.usersService.updateRefreshToken(result._id.toString(), tokens.refreshToken);
+      const {
+        password: _password,
+        refreshToken: _refreshToken,
+        ...result
+      } = user.toObject();
+
+      const tokens = await this.generateAdminTokens(
+        result._id.toString(),
+        result.email,
+        result.role,
+      );
+      await this.usersService.updateRefreshToken(
+        result._id.toString(),
+        tokens.refreshToken,
+      );
 
       return {
         admin: result,
@@ -74,8 +95,15 @@ export class AdminAuthService {
   }
 
   async loginAdmin(user: any) {
-    const tokens = await this.generateAdminTokens(user._id.toString(), user.email, user.role);
-    await this.usersService.updateRefreshToken(user._id.toString(), tokens.refreshToken);
+    const tokens = await this.generateAdminTokens(
+      user._id.toString(),
+      user.email,
+      user.role,
+    );
+    await this.usersService.updateRefreshToken(
+      user._id.toString(),
+      tokens.refreshToken,
+    );
 
     return {
       admin: user,
@@ -83,7 +111,11 @@ export class AdminAuthService {
     };
   }
 
-  private async generateAdminTokens(userId: string, email: string, role: UserRole) {
+  private async generateAdminTokens(
+    userId: string,
+    email: string,
+    role: UserRole,
+  ) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
@@ -129,4 +161,3 @@ export class AdminAuthService {
     return this.usersService.updateRole(userId, role);
   }
 }
-
